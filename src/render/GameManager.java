@@ -41,9 +41,7 @@ public class GameManager {
 		while(true){
 			try {
 				Thread.sleep(REFRESH_DELAY);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			} catch (InterruptedException e) {}
 			gameWindow.getCurrentScene().repaint();
 			if(gameWindow.getCurrentScene() instanceof GameScreen){
 				gameLogic.logicUpdate();
