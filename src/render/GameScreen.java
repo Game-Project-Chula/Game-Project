@@ -1,62 +1,150 @@
 package render;
 
+import java.applet.Applet;
+import java.applet.AudioClip;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import logic.IRenderableObject;
+import logic.TargetObject;
 import logic.IRenderableHolder;
+import logic.InputUtility;;
 
 public class GameScreen extends JPanel{
 	
 	private IRenderableHolder renderableHolder;
-
-	protected GameScreen(IRenderableHolder holder) {
-		renderableHolder = holder;
-		addListener();
-		setDoubleBuffered(true);
-	}
+	private JPanel graphics;
+	private static boolean isGameOver=false;
+	//life should be 4
+	private int lifeLeft=4;
 	
-	private void addListener(){
+	private AudioClip gameSong; 
+	private List<TargetObject> targetObject = new ArrayList<TargetObject>();
+	private static int friendLeft;
+	public static TargetObject testTargetObject;
+	public static TargetObject testTargetObject2  = new TargetObject(0, 0, null);
+	
+	private static String inputString= "";
+	private static boolean killedByTyping = false;
+
+	protected GameScreen() {
+		setBackground(new Color(0,102,0));
+		setDoubleBuffered(true);
+		ClassLoader loader = GameScreen.class.getClassLoader();
 		
-		this.addKeyListener(new KeyListener() {
+		try {
+			gameSong = Applet.newAudioClip(loader.getResource("res/se/swanlake.wav").toURI().toURL());
+		} catch (Exception e) {}
+		if(GameTitle.toGameScreen)gameSong.play();
+		
+		//Add enemy
+		for(int i=0;i<137;i++){
+			 testTargetObject = new TargetObject(0, 0, null);
+			 targetObject.add(testTargetObject);
+		}
+		friendLeft = targetObject.size();
+		
+		
+		graphics = new JPanel(){
 			
-			@Override
-			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
+			@Override	
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				Graphics2D g2 = (Graphics2D) g;
+				g2.setColor(new Color(0,102,0));
+				g2.fillRect(0, 0, 1200, 800);
+				setFocusable(true);
+				requestFocus();
+				
+					try {
+						//When we kill enemy
+						if(killedByTyping&&!targetObject.isEmpty()){
+							targetObject.remove(0);
+							inputString="";
+							friendLeft-=1;
+							killedByTyping=false;
+						}
+						
+						//When enemy collide us 
+						if(475<=targetObject.get(0).getX()
+								&& targetObject.get(0).getX()<=525
+								&& 450<=targetObject.get(0).getY()&&targetObject.get(0).getY()<=475 
+								&&!targetObject.isEmpty()){
+							
+							targetObject.remove(0);
+							inputString="";
+							lifeLeft-=1;
+							friendLeft-=1;
+							if(lifeLeft==0)isGameOver=true;
+						}
+		
+						
+						if(/*!isGameOver*/lifeLeft!=0){
+							DrawingUtility.drawStatusBar(g2, friendLeft, lifeLeft);
+							targetObject.get(0).move();
+							DrawingUtility.drawInputString(g2,inputString);
+							DrawingUtility.drawFriend(g2, targetObject.get(0).getX()
+									,targetObject.get(0).getY() , "hello1");
+							
+						}else{
+							DrawingUtility.drawStatusBar(g2, friendLeft, lifeLeft);
+							DrawingUtility.drawInputString(g2,"it's You");
+						}
+
+						
+						Thread.sleep(5);
+						GameTitle.startGame.repaint();
+					} catch (InterruptedException e) {}
+				
+				
+				try {
+					Thread.sleep(13);
+				} catch (InterruptedException e) {}
 				
 			}
 			
-			@Override
-			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
+		};
+		graphics.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				// TODO Auto-generated method stub
+				super.keyPressed(e);
+				if(e.getKeyCode()==KeyEvent.VK_ENTER && inputString.equalsIgnoreCase("HELLO1")){
+					targetObject.remove(0);
+					inputString="";
+					friendLeft-=1;
+					killedByTyping=false;
+				}				if(e.getKeyCode()==KeyEvent.VK_BACK_SPACE){
+					if(inputString.length()!=0)inputString=inputString.substring(0,inputString.length()-1);
+				}
 				
+				if(e.getKeyCode()!=KeyEvent.VK_BACK_SPACE && e.getKeyCode()!=KeyEvent.VK_ENTER
+						&& e.getKeyCode()!=KeyEvent.VK_CONTROL && e.getKeyCode()!=KeyEvent.VK_SHIFT){
+					char a = e.getKeyChar();
+					if(inputString.length()<15)inputString+=a;
+				}
+			
 			}
+			
 		});
-	}
-	
-	public void paintComponent(Graphics g){
-		super.paintComponents(g);
-		Graphics2D g2 = (Graphics2D) g; 
-		
-		Dimension dim = getSize();
-		g2.clearRect(0, 0, (int)dim.getWidth(), (int)dim.getHeight());
-		
-		for(IRenderableObject renderable : renderableHolder.getSortedRenderableObject()){
-			renderable.render(g2);
-		}
-		
-		
+		graphics.setPreferredSize(new Dimension(1200, 800));
+		this.add(graphics);
 	}
 	
 	
