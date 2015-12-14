@@ -13,8 +13,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import java.beans.FeatureDescriptor;
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,12 +34,18 @@ public class GameScreen extends JPanel{
 	private static boolean isGameOver=false;
 	//life should be 4
 	private int lifeLeft=4;
+	private URL url = getClass().getResource("res/img/friend");
+	private File folder = new File("src/res/img/friend");
+	private File[] listOfFiles = folder.listFiles();
+	private static BufferedImage friendImage;
 	
 	private AudioClip gameSong; 
 	private List<TargetObject> targetObject = new ArrayList<TargetObject>();
+	private List<String> targetName = new ArrayList<String>(); 
+	private List<BufferedImage> targetPicture = new ArrayList<BufferedImage>();
 	private static int friendLeft;
 	public static TargetObject testTargetObject;
-	public static TargetObject testTargetObject2  = new TargetObject(0, 0, null);
+	//public static TargetObject testTargetObject2  = new TargetObject(0, 0, null);
 	
 	private static String inputString= "";
 	private static boolean killedByTyping = false;
@@ -48,14 +55,28 @@ public class GameScreen extends JPanel{
 		setDoubleBuffered(true);
 		ClassLoader loader = GameScreen.class.getClassLoader();
 		
+
+		
+		
 		try {
 			gameSong = Applet.newAudioClip(loader.getResource("res/se/swanlake.wav").toURI().toURL());
+			for (File file : listOfFiles) {
+			    if (file.isFile()) {
+			    	String friendImageName = file.getName();
+			    	friendImage = ImageIO.read(loader.getResourceAsStream("res/img/friend/"+friendImageName));
+			    	targetName.add(friendImageName);
+			    	targetPicture.add(friendImage);
+			    }
+			}
+			
+			
 		} catch (Exception e) {}
 		if(GameTitle.toGameScreen)gameSong.play();
 		
 		//Add enemy
-		for(int i=0;i<137;i++){
-			 testTargetObject = new TargetObject(0, 0, null);
+		for(int i=0;i<100;i++){
+			
+			 testTargetObject = new TargetObject(0, targetName.get(0),null);
 			 targetObject.add(testTargetObject);
 		}
 		friendLeft = targetObject.size();
@@ -100,7 +121,7 @@ public class GameScreen extends JPanel{
 							targetObject.get(0).move();
 							DrawingUtility.drawInputString(g2,inputString);
 							DrawingUtility.drawFriend(g2, targetObject.get(0).getX()
-									,targetObject.get(0).getY() , "hello1");
+									,targetObject.get(0).getY() ,"test1",null);
 							
 						}else{
 							DrawingUtility.drawStatusBar(g2, friendLeft, lifeLeft);

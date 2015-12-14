@@ -9,6 +9,7 @@ import render.DrawingUtility;
 public class TargetObject implements IRenderableObject{
 	
 	protected int x,y,z = 0;
+	private String name;
 	public boolean isDestroyed = false;
 	protected int[] movingParameter;
 	protected int movingDuration;
@@ -21,8 +22,8 @@ public class TargetObject implements IRenderableObject{
 	private static int hardMove = 3;
 	//it will have a fileReader for friend's name
 	
-	public TargetObject(int movingDuration,int z,BufferedImage image) {
-		this.z = z;
+	public TargetObject(int movingDuration,String name,BufferedImage image) {
+		this.name = name;
 		this.movingDuration = movingDuration;
 		movingParameter = new int[8];
 		//we assume that the size of the target is circle with 100 px radius.
@@ -84,7 +85,7 @@ public class TargetObject implements IRenderableObject{
 
 	@Override
 	public void render(Graphics2D g2) {
-		DrawingUtility.drawFriend(g2, x, y, "simple");
+	
 	}
 	
 	public int getX(){
@@ -93,6 +94,10 @@ public class TargetObject implements IRenderableObject{
 	
 	public int getY(){
 		return this.y;
+	}
+	
+	public String getName(){
+		return this.name;
 	}
 	
 }
